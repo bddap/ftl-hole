@@ -27,6 +27,7 @@ build-web:
   set -euo pipefail
 
   just need-toolchain
+  
   cargo build --target wasm32-unknown-unknown --release --bin {{bin}}
 
   mkdir -p dist
@@ -34,22 +35,12 @@ build-web:
   cp asset/* dist
 
 serve:
-  just need basic-http-server 'cargo install basic-http-server'
-  basic-http-server --addr '127.0.0.1:47109' dist
-
-signal-dist-changes:
-  just need websocat 'cargo install websocat'
-  just need entr 'your system package manager'
-  find ./dist/ | entr echo /_ | websocat -s '127.0.0.1:47110'
-
-serves:
   #!/usr/bin/env bash
   set -euo pipefail
 
   just need rg 'cargo install ripgrep'
-
+  just need static-reload 'cargo install --git https://github.com/bddap/static-reload.git'
+  just need entr 'http://eradman.com/entrproject/ or apt install entr or brew install entr'
   just build-web
-
-  parallel -k --ungroup --halt now,fail=1 --halt now,success=1 ::: \
-    "just signal-dist-changes" \
-    "just serve"
+  
+  find ./dist/ | entr echo /_ | static-reload dist '127.0.0.1:47109'

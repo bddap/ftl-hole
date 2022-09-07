@@ -25,10 +25,9 @@
       load("main.wasm");
     </script>
 	<script>
-	  let ws = new WebSocket("ws://localhost:47110");
-	  console.log(ws);
+	  let ws = new WebSocket("ws://" + window.location.host);
 	  ws.onmessage = (event) => {
-		  console.log(event.data);
+		  window.location.reload();
 	  };
 	</script>
   </body>
