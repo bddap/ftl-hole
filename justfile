@@ -45,3 +45,8 @@ serve:
   just build-web
   
   find {{dist}} | entr echo /_ | static-reload {{dist}} '127.0.0.1:47109'
+
+ci:
+  cargo fmt --check
+  cargo clippy
+  cargo test

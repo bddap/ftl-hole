@@ -28,17 +28,9 @@ jobs:
       - name: Cache 🗄️
         uses: Swatinem/rust-cache@v1
 
-      - name: Fmt
+      - name: Tests and Checks
         run: |
-          cargo fmt --check
-
-      - name: Test
-        run: |
-          cargo test
-
-      - name: Clippy
-        run: |
-          cargo clippy
+          just ci
 
       - name: Build 🔧
         run: |
