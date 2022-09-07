@@ -1,6 +1,7 @@
 # https://github.com/casey/just
 
 bin := "ftl-hole"
+dist := "./target/dist"
 
 need command intructions:
   #!/usr/bin/env bash
@@ -30,9 +31,9 @@ build-web:
   
   cargo build --target wasm32-unknown-unknown --release --bin {{bin}}
 
-  mkdir -p dist
-  cp target/wasm32-unknown-unknown/release/{{bin}}.wasm dist/main.wasm
-  cp asset/* dist
+  mkdir -p {{dist}}
+  cp target/wasm32-unknown-unknown/release/{{bin}}.wasm {{dist}}/main.wasm
+  cp asset/* {{dist}}
 
 serve:
   #!/usr/bin/env bash
@@ -43,4 +44,4 @@ serve:
   just need entr 'http://eradman.com/entrproject/ or apt install entr or brew install entr'
   just build-web
   
-  find ./dist/ | entr echo /_ | static-reload dist '127.0.0.1:47109'
+  find {{dist}} | entr echo /_ | static-reload {{dist}} '127.0.0.1:47109'

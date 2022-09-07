@@ -1,0 +1,51 @@
+name: Build and Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-deploy:
+    concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Just 🤖
+        uses: extractions/setup-just@v1
+
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      # lasound is a dependency for native builds
+      - name: Install ALSA dev
+        run: |
+          sudo apt-get install libasound2-dev
+
+      - name: Install Rust 🦀
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: Cache 🗄️
+        uses: Swatinem/rust-cache@v1
+
+      - name: Fmt
+        run: |
+          cargo fmt --check
+
+      - name: Test
+        run: |
+          cargo test
+
+      - name: Clippy
+        run: |
+          cargo clippy
+
+      - name: Build 🔧
+        run: |
+          just build-web
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          branch: gh-pages
+          folder: target/dist

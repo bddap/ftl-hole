@@ -1,4 +1,4 @@
-use std::ops::{Div, Neg};
+use std::ops::Neg;
 
 use macroquad::prelude::*;
 
