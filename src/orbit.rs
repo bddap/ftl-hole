@@ -1,6 +1,8 @@
 // special thanks to nchashch who provided https://github.com/nchashch/orbital-mechanics-rust
 // on which this was originally based
 
+// TODO: try https://space.stackexchange.com/questions/15366/how-do-you-model-hyperbolic-orbits
+
 use glam::{dvec3, DMat3, DVec3};
 use std::{f64::consts::PI, ops::Div};
 
@@ -56,6 +58,7 @@ impl Koe {
         // is equal to eccentricity of the orbit)
         let ev = velocity.cross(specific_angular_momentum) / mu - position.normalize();
         let eccentricity = ev.length();
+        dbg!(eccentricity);
 
         // Node vector
         // (vector pointing towards the ascending node)
@@ -230,6 +233,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore]
     fn period() {
         const PARENT_MASS: f64 = 5.97219_e15;
         const GRAVITATIONAL_CONSTANT: f64 = 6.67_e-11;
