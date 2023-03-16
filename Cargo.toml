@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 glam = "0.21.3"
+itertools = "0.10.5"
 macroquad = "0.3.23"
 
 [features]
