@@ -47,7 +47,7 @@ impl Sat {
 
 #[macroquad::main("ftl-hole")]
 async fn main() {
-    let warp_points = [
+    let mut warp_points = [
         (dvec2(1.0, -1.0), colors::BEIGE),
         (dvec2(1.0, 1.0), colors::DARKBROWN),
         (dvec2(-1.0, 1.0), colors::DARKBROWN),
@@ -87,14 +87,12 @@ async fn main() {
             let mouse_pos = (screen_to_world * mouse_pos.extend(1.0)).xy();
 
             let warp_pos = warp_points
-                .iter()
-                .map(|(p, _)| p)
-                .copied()
-                .min_by_key(|p| (*p - mouse_pos).length_squared() as i64)
+                .iter_mut()
+                .min_by_key(|p| (p.0 - mouse_pos).length_squared() as i64)
                 .unwrap();
 
             dbg!(player.sat);
-            player.sat.pos = warp_pos;
+            std::mem::swap(&mut player.sat.pos, &mut warp_pos.0);
             dbg!(player.sat);
         }
 
