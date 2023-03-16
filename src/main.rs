@@ -3,11 +3,13 @@ use std::ops::Range;
 use glam::{dvec2, DMat3, DVec2, Vec3Swizzles};
 use itertools::Itertools;
 use macroquad::{
-    color::colors,
+    color::colors::{self, BEIGE, DARKBLUE, DARKBROWN, MAROON},
     prelude::{
         clear_background, draw_circle, draw_line, get_time, is_mouse_button_pressed,
-        mouse_position, next_frame, screen_height, screen_width, vec2, MouseButton, YELLOW,
+        mouse_position, next_frame, screen_height, screen_width, vec2, Color, MouseButton, YELLOW,
     },
+    rand::gen_range,
+    shapes::draw_rectangle,
 };
 
 const WORLD_RADIUS_METERS: f64 = 1024.0;
@@ -45,15 +47,22 @@ impl Sat {
     }
 }
 
+#[derive(Clone)]
+struct WarpPoint {
+    pos: DVec2,
+    color: Color,
+    win_destination: DVec2,
+}
+
 #[macroquad::main("ftl-hole")]
 async fn main() {
-    let mut warp_points = [
-        (dvec2(1.0, -1.0), colors::BEIGE),
-        (dvec2(1.0, 1.0), colors::DARKBROWN),
-        (dvec2(-1.0, 1.0), colors::DARKBROWN),
-        (dvec2(-1.0, -1.0), colors::DARKBROWN),
-    ]
-    .map(|(p, c)| (p * WORLD_RADIUS_METERS / 2.0, c));
+    // create 4 warp points with random positions and destinations
+    let mut warp_points = [DARKBROWN, MAROON, DARKBLUE, BEIGE].map(|color| WarpPoint {
+        color,
+        pos: dvec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)).normalize() * WORLD_RADIUS_METERS,
+        win_destination: dvec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)).normalize()
+            * WORLD_RADIUS_METERS,
+    });
 
     let initial_radius: f32 = 1.0 / 6.0;
     let pos = dvec2(initial_radius as f64, 0.0) * WORLD_RADIUS_METERS;
@@ -88,11 +97,11 @@ async fn main() {
 
             let warp_pos = warp_points
                 .iter_mut()
-                .min_by_key(|p| (p.0 - mouse_pos).length_squared() as i64)
+                .min_by_key(|p| (p.pos - mouse_pos).length_squared() as i64)
                 .unwrap();
 
             dbg!(player.sat);
-            std::mem::swap(&mut player.sat.pos, &mut warp_pos.0);
+            std::mem::swap(&mut player.sat.pos, &mut warp_pos.pos);
             dbg!(player.sat);
         }
 
@@ -107,9 +116,28 @@ async fn main() {
             colors::VIOLET,
         );
 
-        for (point, color) in warp_points {
-            let pos_screen = world_to_screen * point.extend(1.0);
-            draw_circle(pos_screen.x as f32, pos_screen.y as f32, 15.0, color);
+        for wp in &warp_points {
+            let pos_screen = world_to_screen * wp.pos.extend(1.0);
+            draw_circle(pos_screen.x as f32, pos_screen.y as f32, 15.0, wp.color);
+
+            let dest_screen = world_to_screen * wp.win_destination.extend(1.0);
+            draw_rectangle(
+                dest_screen.x as f32 - 10.0,
+                dest_screen.y as f32 - 10.0,
+                20.0,
+                20.0,
+                wp.color,
+            );
+
+            // draw a thin line from the warp point to its destination
+            draw_line(
+                pos_screen.x as f32,
+                pos_screen.y as f32,
+                dest_screen.x as f32,
+                dest_screen.y as f32,
+                1.0,
+                wp.color,
+            );
         }
 
         let points = 32;
